@@ -167,12 +167,12 @@ jobs:
       #     retention-days: 5
 
       # TODO: uncomment when the action is working for non ghcr.io pushes. GH Issue: https://github.com/actions/attest-build-provenance/issues/80
-       - name: Generate build provenance attestation
-         uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
-         with:
-           subject-name: kubeshop/dex
-           subject-digest: ${{ steps.build.outputs.digest }}
-           push-to-registry: true
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
+        with:
+          subject-name: kubeshop/dex
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
 #      - name: Generate build provenance attestation
 #        uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
