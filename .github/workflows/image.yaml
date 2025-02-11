@@ -170,7 +170,7 @@ jobs:
       - name: Generate build provenance attestation
         uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
         with:
-          subject-name: kubeshop/dex
+          subject-name: index.docker.io/kubeshop/dex
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
