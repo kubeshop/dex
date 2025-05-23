@@ -1,0 +1,149 @@
+name: Deploy Released Assets
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-alpine:
+    runs-on: ubuntu-latest
+    environment:
+      name: aports
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@v4
+      - name: install lab
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release download --repo zaquestion/lab v0.25.1 -p lab_0.25.1_linux_amd64.tar.gz
+          tar -xzf lab_0.25.1_linux_amd64.tar.gz
+          ./lab --version
+      - name: Retrieve release artifacts
+        id: artifacts
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # need the checksums
+          gh release download ${TAG_NAME} --skip-existing -p "${TAG_NAME}.sha*"
+
+          echo "sha256sum=$(cat ${TAG_NAME}.sha256)" >> $GITHUB_OUTPUT
+          echo "sha512sum=$(cat ${TAG_NAME}.sha512)" >> $GITHUB_OUTPUT
+
+          # need gomplate to template the APKBUILD!
+          gh release download ${TAG_NAME} --skip-existing -p gomplate_linux-amd64
+          chmod 755 gomplate_linux-amd64
+      - name: checkout alpinelinux/aports
+        run: |
+          set -ex
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git clone -v https://gitlab.alpinelinux.org/hairyhenderson/aports.git
+          cd aports
+          # note: this token expires, so needs to be rotated periodically
+          git remote set-url origin "https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@gitlab.alpinelinux.org/hairyhenderson/aports.git"
+          git remote add upstream https://gitlab.alpinelinux.org/alpine/aports.git
+          git checkout master
+      - name: update fork
+        run: |
+          set -ex
+          cd aports
+          git fetch -v upstream
+          git rebase upstream/master
+          git push
+      - name: upgrade gomplate in aports
+        run: |
+          set -ex
+          export VERSION=${TAG_NAME#v}
+
+          cd aports/community/gomplate
+          git checkout -b upgrade-gomplate-aport-${VERSION}
+
+          export ENVJSON="{\"version\": \"${VERSION}\", \"sha512\": \"${{ steps.artifacts.outputs.sha512sum }}\" }"
+          ../../../gomplate_linux-amd64 -c .=env:///ENVJSON\?type=application/json \
+            -f ../../../packaging/alpine/APKBUILD.tmpl \
+            -o APKBUILD
+
+          git add APKBUILD
+          git commit -sm "community/gomplate: upgrade to ${VERSION}"
+          git push -u origin upgrade-gomplate-aport-${VERSION}
+
+          # open a PR
+          ../../../lab mr create --allow-collaboration \
+            -m "community/gomplate: upgrade to ${VERSION}" \
+            -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
+  deploy-docker:
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3.6.0
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v3.10.0
+      with:
+        version: v0.19.3
+        driver-opts: |
+          image=moby/buildkit:buildx-stable-1
+          network=host
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Login to GHCR
+      uses: docker/login-action@v3.4.0
+      with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Login to DockerHub
+      uses: docker/login-action@v3.4.0
+      with:
+          # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build & Push
+      run: |
+        set -ex
+
+        # seed from the last ghcr.io image(s)
+        docker pull ghcr.io/hairyhenderson/gomplate:latest
+        docker pull ghcr.io/hairyhenderson/gomplate:alpine
+
+        export srcrepo=ghcr.io/${{ github.repository}}
+        export COMMIT=${{ github.sha }}
+
+        make docker-multi COMMIT=${COMMIT} DOCKER_REPO=${srcrepo} BUILDX_ACTION=--push
+
+        set -x
+        export git_tag=${TAG_NAME}
+        export major_version=${git_tag%\.*}
+        
+        # Push tags first to GHCR, then to DockerHub (last in case of rate-limiting)
+        for repo in "${srcrepo}" "gomplate/gomplate" "hairyhenderson/gomplate"; do
+          for tag in "stable" "${git_tag}" "${major_version}"; do
+            docker buildx imagetools create -t ${repo}:${tag} ${srcrepo}:latest
+            docker buildx imagetools create -t ${repo}:${tag}-alpine ${srcrepo}:alpine
+          done
+        done
+
+        # also push latest and alpine tags to the other repos
+        for repo in "gomplate/gomplate" "hairyhenderson/gomplate"; do
+          docker buildx imagetools create -t ${repo}:latest ${srcrepo}:latest
+          docker buildx imagetools create -t ${repo}:alpine ${srcrepo}:alpine
+        done
