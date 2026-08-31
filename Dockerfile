@@ -84,6 +84,12 @@ COPY --from=builder /usr/local/src/dex/api/v2/go.mod /usr/local/src/dex/api/v2/g
 COPY --from=builder /go/bin/dex /usr/local/bin/dex
 COPY --from=builder /go/bin/docker-entrypoint /usr/local/bin/docker-entrypoint
 COPY --from=builder /usr/local/src/dex/web /srv/dex/web
+# Testkube sign-in pages (see testkube/README.md). The templates replace the upstream ones;
+# the static assets live under static/testkube/. DEX_FRONTEND_DIR makes Dex read this
+# directory without any frontend.dir configuration.
+COPY --from=builder /usr/local/src/dex/testkube/web/templates /srv/dex/web/templates
+COPY --from=builder /usr/local/src/dex/testkube/web/static/testkube /srv/dex/web/static/testkube
+ENV DEX_FRONTEND_DIR=/srv/dex/web
 
 COPY --from=gomplate /usr/local/bin/gomplate /usr/local/bin/gomplate
 

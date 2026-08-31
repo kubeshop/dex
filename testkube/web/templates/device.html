@@ -1,0 +1,25 @@
+{{ template "header.html" . }}
+
+<div class="tk-stack">
+<div class="tk-card">
+  <h1 class="tk-card__title">Enter user code</h1>
+  <form method="post" action="{{ .PostURL }}" class="tk-form">
+    <label for="user_code" class="tk-sr-only">User code</label>
+    {{/* The device flow can put the code in the URL. Focus the field when it is empty,
+         or when the code is not correct. */}}
+    <input tabindex="1" required id="user_code" name="user_code" type="text" class="tk-input" autocomplete="off"
+           {{ if .UserCode }}value="{{ .UserCode }}"{{ else }}placeholder="XXXX-XXXX"{{ end }}
+           {{ if or .Invalid (not .UserCode) }}autofocus{{ end }}/>
+    <button tabindex="2" id="submit-login" type="submit" class="tk-btn tk-btn--primary"><span>Submit</span></button>
+  </form>
+</div>
+
+{{ if .Invalid }}
+<div class="tk-banner tk-banner--error" role="alert" id="login-error">
+  <span class="tk-banner__title">Invalid or expired user code.</span>
+  <span class="tk-banner__text">Check the code on your device and enter it again.</span>
+</div>
+{{ end }}
+</div>
+
+{{ template "footer.html" . }}

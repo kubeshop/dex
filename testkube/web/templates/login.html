@@ -1,0 +1,16 @@
+{{ template "header.html" . }}
+
+{{/* Same list as app.testkube.io: "Login via <Provider>" buttons, one color and icon per provider. */}}
+<div class="tk-card">
+  <h1 class="tk-card__title">Login</h1>
+  <div class="tk-actions">
+    {{ range $c := .Connectors }}
+    <a href="{{ $c.URL }}" target="_self" class="tk-btn tk-btn--provider tk-btn--{{ $c.Type }}">
+      {{ template "tk-icon-connector" $c.Type }}
+      <span>Login via {{ $c.Name }}</span>
+    </a>
+    {{ end }}
+  </div>
+</div>
+
+{{ template "footer.html" . }}

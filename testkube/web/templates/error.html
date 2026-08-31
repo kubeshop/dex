@@ -1,0 +1,37 @@
+{{ template "header.html" . }}
+
+<!--
+  Dex passes .ErrType (for example "Bad Request", "Unauthorized", "Not Found") and .ErrMsg
+  (for example "Invalid client_id." or an upstream OIDC failure). The banner shows both, in the
+  same Banner component style the dashboard uses for ?authError=... on /login.
+-->
+
+<div class="tk-stack">
+<div class="tk-card">
+  <h1 class="tk-card__title">Login</h1>
+  {{/* frontend.extra.dashboardURL is set per environment (SaaS: app.testkube.io, on-prem: the customer's
+       dashboard host). The dashboard starts a new login when nobody is logged in, so one button is
+       enough. Without the value the button returns to the previous page. */}}
+  {{ $dashboard := extra "dashboardURL" }}
+  <div class="tk-actions">
+    {{ if $dashboard }}
+    <a href="{{ $dashboard }}" target="_self" class="tk-btn tk-btn--primary"><span>Back to Testkube</span></a>
+    {{ else }}
+    <button type="button" id="go-back" class="tk-btn tk-btn--primary"><span>Go back</span></button>
+    {{ end }}
+  </div>
+</div>
+
+<div class="tk-banner tk-banner--error" role="alert">
+  <span class="tk-banner__title">Login failed.</span>
+  <span class="tk-banner__text">{{ .ErrType }}{{ if .ErrMsg }}: {{ .ErrMsg }}{{ end }}</span>
+</div>
+</div>
+
+{{ if not $dashboard }}
+<script type="text/javascript">
+  document.getElementById('go-back').addEventListener('click', function () { history.back(); });
+</script>
+{{ end }}
+
+{{ template "footer.html" . }}

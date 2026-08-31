@@ -1,0 +1,19 @@
+{{ template "header.html" . }}
+
+<div class="tk-card">
+  <div>
+    <h1 class="tk-card__title">Login successful</h1>
+    <p class="tk-card__subtitle">Copy this code into your application:</p>
+  </div>
+  <div class="tk-form">
+    <label for="code" class="tk-sr-only">Code</label>
+    <input id="code" type="text" class="tk-input" value="{{ .Code }}" readonly/>
+  </div>
+</div>
+
+<script type="text/javascript">
+  // One click selects the whole code, so the user can copy it at once.
+  document.getElementById('code').addEventListener('click', function () { this.select(); });
+</script>
+
+{{ template "footer.html" . }}

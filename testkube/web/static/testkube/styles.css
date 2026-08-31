@@ -1,0 +1,338 @@
+/*
+ * Testkube theme for Dex.
+ *
+ * Every value in this file comes from the dashboard source in
+ * testkube-cloud-api/js/packages/web:
+ *   - colors:      src/styles/Colors.ts (mainBackground, indigo400, slate*, rose*, ...)
+ *   - layout:      src/layouts/AuthPageLayout/AuthPageLayout.styled.tsx (AuthPageWrapper,
+ *                  AuthPageContentWrapper, AuthPageBGWrapper, AuthPageFormWrapper,
+ *                  AuthPageButtonsWrapper), src/components/molecules/AuthForm/AuthForm.styled.tsx
+ *                  (StandaloneFormWrapper, AuthFormTitle, AuthFormSubtitle),
+ *                  src/components/pages/LoginPage/LoginPage.tsx (BrandWordmark),
+ *                  src/components/pages/LoginPage/components/AuthErrorBanner.tsx (Banner)
+ *   - controls:    src/styles/antdThemeConfig.ts (token.colorPrimary = purple, borderRadius 4,
+ *                  components.Input controlHeight 44, components.Button controlHeight 40) and
+ *                  src/components/custom-antd/Button/Button.styled.tsx ($customType styles)
+ *   - breakpoints: src/styles/MediaQueries.ts (tablet = max-width 768px, laptop = max-width 1024px)
+ * Dex serves this directory at /static/testkube/, so all asset URLs are relative to this file.
+ */
+
+@font-face { font-display: swap; font-family: 'Roboto'; font-style: normal; font-weight: 400; src: url('roboto-v30-latin-400.woff2') format('woff2'); }
+@font-face { font-display: swap; font-family: 'Roboto'; font-style: normal; font-weight: 500; src: url('roboto-v30-latin-500.woff2') format('woff2'); }
+@font-face { font-display: swap; font-family: 'Roboto'; font-style: normal; font-weight: 700; src: url('roboto-v30-latin-700.woff2') format('woff2'); }
+
+:root {
+  --tk-main-background: #111827; /* K.mainBackground */
+  --tk-white-pure: #FFFFFF;      /* K.whitePure */
+  --tk-purple: #7984F4;          /* antd colorPrimary, colorLink */
+  --tk-link-hover: #a8b2ff;      /* antd colorLinkHover */
+  --tk-link-active: #5d63cf;     /* antd colorLinkActive */
+  --tk-purple-hover: #6A73D2;    /* antd colorPrimaryHover, derived from colorPrimary by the dark algorithm */
+  --tk-purple-outline: rgba(123, 137, 251, 0.29); /* antd controlOutline, derived the same way */
+  --tk-indigo-300: #A5B4FC;      /* K.indigo300: primary button hover text */
+  --tk-indigo-400: #818CF8;      /* K.indigo400: card border, primary button */
+  --tk-slate-200: #E2E8F0;
+  --tk-slate-300: #CBD5E1;
+  --tk-slate-400: #94A3B8;
+  --tk-slate-500: #64748B;
+  --tk-slate-600: #475569;
+  --tk-slate-700: #334155;
+  --tk-slate-800: #1E293B;
+  --tk-pink-500: #EC4899;       /* antd colorError */
+  --tk-violet-800: #5B21B6;
+  --tk-rose-200: #FECDD3;
+  --tk-rose-500: #F43F5E;
+  --tk-font: 'Roboto', sans-serif;
+  --tk-ease: cubic-bezier(0.645, 0.045, 0.355, 1); /* antd motionEaseInOut */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; }
+.theme-body {
+  background-color: var(--tk-main-background);
+  color: var(--tk-white-pure);
+  font-family: var(--tk-font);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+/* AuthPageBGWrapper + AuthPageBGPartLeft/Right */
+.tk-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+  background-color: #111827;
+}
+.tk-bg__part {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+  mix-blend-mode: luminosity;
+  opacity: 0.5;
+}
+.tk-bg__part--left { width: 525px; background-image: url('home-left.png'); }
+.tk-bg__part--right { width: 475px; background-image: url('home-right.png'); }
+@media (max-width: 1024px) {
+  .tk-bg__part { width: 100%; background-size: cover; }
+  .tk-bg__part:last-child { display: none; }
+}
+
+/* Page root (display:flex; min-height 100vh) + AuthPageWrapper */
+.tk-root { display: flex; min-height: 100%; }
+.tk-page {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  margin: auto;
+  align-items: center;
+}
+
+/* AuthPageContentWrapper */
+.tk-content {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 90px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-top: 35px;
+}
+@media (max-width: 768px) {
+  .tk-content { gap: 40px; padding-top: 0; }
+}
+
+/* BrandWordmark */
+.tk-wordmark { display: flex; justify-content: center; }
+.tk-wordmark img { width: 205px; height: auto; display: block; }
+
+/* AuthPageFormWrapper + StandaloneFormWrapper */
+.tk-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  border: 1px solid var(--tk-indigo-400);
+  border-radius: 4px;
+  padding: 45px clamp(20px, 6vw, 55px) 94px;
+  max-width: 100%;
+}
+.tk-card--alt-link { padding-bottom: 48px; }
+@media (max-width: 768px) {
+  .tk-card { gap: 40px; padding-top: 32px; padding-bottom: 48px; }
+  .tk-card--alt-link { padding-bottom: 32px; }
+}
+
+/* AuthFormTitle, AuthFormSubtitle */
+.tk-card__title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 40px;
+  text-align: center;
+  color: var(--tk-white-pure);
+}
+.tk-card__subtitle {
+  margin: 24px 0 0;
+  text-align: center;
+  color: var(--tk-slate-400);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+/* Banner (+ BannerTitle, BannerText) */
+.tk-banner {
+  width: 650px;
+  max-width: 100%;
+  min-height: 80px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+}
+.tk-banner--error { background: #88133799; border-color: var(--tk-rose-500); color: var(--tk-rose-200); }
+.tk-banner__title { font-weight: 500; }
+.tk-banner__text { font-weight: 400; overflow-wrap: anywhere; }
+
+/* Card plus its error banner. The banner sits under the card, at the card's width, outside the
+   layout flow: the wordmark and the card keep their position when an error appears. On short
+   viewports the banner returns to the flow so it stays visible. */
+.tk-stack { position: relative; display: flex; flex-direction: column; align-items: stretch; }
+.tk-stack .tk-banner {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: auto;
+  margin: 24px 0 0;
+}
+@media (max-height: 720px) {
+  .tk-stack .tk-banner { position: static; width: 100%; }
+}
+
+/* AuthPageButtonsWrapper. The dashboard's Login card renders its button 220px wide. */
+.tk-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 220px;
+  max-width: 100%;
+}
+
+/* AltLinkText under the actions (StandaloneFormWrapper: margin-top -30px): white text, purple link */
+.tk-alt {
+  margin-top: -30px;
+  text-align: center;
+  color: var(--tk-white-pure);
+  font-size: 14px;
+  line-height: 22px;
+}
+.tk-alt a { color: var(--tk-purple); text-decoration: none; transition: color 0.2s var(--tk-ease); }
+.tk-alt a:hover { color: var(--tk-link-hover); }
+.tk-alt a:active { color: var(--tk-link-active); }
+
+/* antd Button (components.Button: controlHeight 40, no shadow, defaultBg rgba(255,255,255,0.05)) */
+.tk-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-family: var(--tk-font);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: none;
+  transition: all 0.2s var(--tk-ease);
+}
+.tk-btn:focus-visible { outline: 4px solid rgba(121, 132, 244, 0.3); outline-offset: 1px; }
+/* AntdCustomStyledButton ($customType primary): on hover, focus and active the fill drops
+   to transparent and the text turns indigo300 with an indigo400 border. */
+.tk-btn--primary { background-color: var(--tk-indigo-400); color: var(--tk-white-pure); }
+.tk-btn--primary:hover,
+.tk-btn--primary:focus,
+.tk-btn--primary:active { background-color: transparent; color: var(--tk-indigo-300); border-color: var(--tk-indigo-400); }
+/* Provider buttons, colors as on app.testkube.io: GitHub slate700, GitLab violet800, Google #4285F4,
+   every other connector (SSO, OIDC, SAML, LDAP, local) indigo400 like "Login via SSO".
+   --tk-btn-color holds the provider color: it fills the button, and it draws the border on
+   hover, focus and active, where the fill turns transparent and the text stays white. */
+.tk-btn--provider { --tk-btn-color: var(--tk-indigo-400); background-color: var(--tk-btn-color); color: var(--tk-white-pure); }
+.tk-btn--github { --tk-btn-color: var(--tk-slate-700); }
+.tk-btn--gitlab { --tk-btn-color: var(--tk-violet-800); }
+.tk-btn--google { --tk-btn-color: #4285F4; }
+.tk-btn--provider:hover,
+.tk-btn--provider:focus,
+.tk-btn--provider:active { background-color: transparent; border-color: var(--tk-btn-color); }
+
+.tk-btn--default { background-color: rgba(255, 255, 255, 0.05); color: var(--tk-slate-300); }
+.tk-btn--default:hover { color: var(--tk-link-hover); border-color: var(--tk-link-hover); }
+.tk-btn--default:active { color: var(--tk-link-active); border-color: var(--tk-link-active); }
+.tk-btn:disabled {
+  cursor: not-allowed;
+  color: var(--tk-slate-500);
+  background-color: #1e293b80;
+  border-color: var(--tk-slate-800);
+}
+.tk-btn__icon { display: inline-flex; width: 14px; height: 14px; }
+.tk-btn__icon svg { width: 1em; height: 1em; font-size: 14px; fill: currentColor; }
+
+/* antd Input (components.Input: controlHeight 44, slate800 background and border,
+   slate200 text, slate500 placeholder, slate600 hover border, colorPrimary focus border) */
+/* Form fields stack with the same 16px gap as AuthPageButtonsWrapper on app.testkube.io. */
+.tk-form { display: flex; flex-direction: column; gap: 16px; width: 340px; max-width: 100%; }
+.tk-input {
+  width: 100%;
+  height: 44px;
+  padding: 4px 11px;
+  background-color: var(--tk-slate-800);
+  border: 1px solid var(--tk-slate-800);
+  border-radius: 4px;
+  color: var(--tk-slate-200);
+  font-family: var(--tk-font);
+  font-size: 14px;
+  line-height: 22px;
+  outline: none;
+  transition: all 0.2s;
+}
+.tk-input::placeholder { color: var(--tk-slate-500); }
+.tk-input:hover { border-color: var(--tk-slate-600); }
+.tk-input:focus { border-color: var(--tk-purple-hover); box-shadow: 0 0 0 2px var(--tk-purple-outline); }
+/* antd status="error": border in colorError (K.pink500). */
+.tk-input--error,
+.tk-input--error:hover { border-color: var(--tk-pink-500); }
+.tk-input--error:focus { border-color: var(--tk-pink-500); box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2); }
+
+/* antd Input.Password: affix wrapper with the visibility toggle at the right (colorIcon slate500, hover slate400). */
+.tk-affix { position: relative; }
+.tk-input--affix { padding-right: 36px; }
+.tk-affix__toggle {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tk-slate-500);
+  cursor: pointer;
+  transition: color 0.2s var(--tk-ease);
+}
+.tk-affix__toggle:hover { color: var(--tk-slate-400); }
+.tk-affix__toggle:focus-visible { outline: 2px solid rgba(121, 132, 244, 0.5); outline-offset: 2px; border-radius: 2px; }
+.tk-affix__icon { display: inline-flex; }
+.tk-affix__icon[hidden] { display: none; }
+.tk-affix__icon svg { width: 14px; height: 14px; fill: currentColor; }
+
+.tk-input:-webkit-autofill,
+.tk-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--tk-slate-200);
+  -webkit-box-shadow: 0 0 0 1000px var(--tk-slate-800) inset;
+}
+
+/* Scope list on the approval page */
+.tk-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+  color: var(--tk-slate-200);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.tk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
